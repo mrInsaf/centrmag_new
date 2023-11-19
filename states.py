@@ -33,6 +33,20 @@ class TrackOrder(StatesGroup):
     choose_order = State()
     track_order = State()
 
+class CheckStatus(StatesGroup):
+    input_fio = State()
+    input_order_number = State()
+
+
+class HowToSearch(StatesGroup):
+    how_to_search = State()
+
+
+class HowToGet(StatesGroup):
+    how_to_get = State()
+
 
 class Misc(StatesGroup):
     misc = State()
+
+
