@@ -25,6 +25,8 @@ dp = Dispatcher()
 @dp.callback_query(Misc.misc, F.data == "back")
 @dp.callback_query(MakeOrder.choose_product, F.data == "back")
 @dp.callback_query(TrackOrder.choose_order, F.data == "back")
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "back")
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "back")
 @dp.callback_query(CreateAccount.get_name_and_surname,
                    F.data == "back")
 async def start_command(callback: types.CallbackQuery, state: FSMContext):
@@ -43,11 +45,13 @@ async def start_command(callback: types.CallbackQuery, state: FSMContext):
     how_to_search = InlineKeyboardButton(text="Как найти товар", callback_data="how to search")
     grafik_raboty = InlineKeyboardButton(text="График работы", callback_data="grafik raboty")
     how_to_get = InlineKeyboardButton(text="Как добраться", callback_data="how to get")
+    delivery_methods = InlineKeyboardButton(text="Способы доставки", callback_data="delivery methods")
+    payment_methods = InlineKeyboardButton(text="Способы оплаты", callback_data="payment methods")
 
     if check_chat_id_in_db(callback.from_user.id):
         if check_authorisation(callback.from_user.id):
             authorised_buttons = [create_order_button, track_order_button, check_status, check_availability,
-                                  how_to_search, how_to_get, grafik_raboty, logout_button, get_contacts]
+                                  how_to_search, how_to_get, grafik_raboty, delivery_methods, payment_methods, logout_button, get_contacts]
             for button in authorised_buttons:
                 kb.add(button)
         else:
@@ -78,11 +82,13 @@ async def start_command(message: types.Message, state: FSMContext):
     how_to_search = InlineKeyboardButton(text="Как найти товар", callback_data="how to search")
     grafik_raboty = InlineKeyboardButton(text="График работы", callback_data="grafik raboty")
     how_to_get = InlineKeyboardButton(text="Как добраться", callback_data="how to get")
+    delivery_methods = InlineKeyboardButton(text="Способы доставки", callback_data="delivery methods")
+    payment_methods = InlineKeyboardButton(text="Способы оплаты", callback_data="payment methods")
 
     if check_chat_id_in_db(message.from_user.id):
         if check_authorisation(message.from_user.id):
             authorised_buttons = [create_order_button, track_order_button, check_status, check_availability,
-                                  how_to_search, how_to_get, grafik_raboty, logout_button, get_contacts]
+                                  how_to_search, how_to_get, grafik_raboty, delivery_methods, payment_methods, logout_button, get_contacts]
             for button in authorised_buttons:
                 kb.add(button)
         else:
@@ -573,6 +579,132 @@ async def by_bus(callback: CallbackQuery, state: FSMContext):
     kb = create_kb()
     await callback.message.answer(text=by_bus_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML)
     await state.set_state(HowToGet.how_to_get)
+
+
+@dp.callback_query(F.data == "delivery methods")
+async def delivery_methods(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    for i, method in enumerate(delivery_methods_list):
+        kb.add(InlineKeyboardButton(text=method, callback_data=str(i)))
+    kb.adjust(1)
+    await callback.message.answer(text=delivery_methods_text, parse_mode=ParseMode.HTML, reply_markup=kb.as_markup())
+    await state.set_state(DeliveryMethods.delivery_methods)
+
+
+@dp.callback_query(DeliveryMethods.method, F.data == "back")
+async def back_to_delivery_methods(callback: CallbackQuery, state: FSMContext):
+    await delivery_methods(callback, state)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "0")
+async def samovivoz(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=samovivoz_text, reply_markup=kb.as_markup())
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "1")
+async def pvz_i_postamaty(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer_photo(photo='https://imgur.com/a/LRsILZY', caption=pvz_text, reply_markup=kb.as_markup())
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "2")
+async def kurierskaya(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer_photo(photo='https://imgur.com/a/40UlmiC')
+    await callback.message.answer(text=kurierskaya_text, reply_markup=kb.as_markup())
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "3")
+async def beskontaktnaya_kurierskaya(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=beskontaktnaya_kurierskaya_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML)
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "4")
+async def punkti_samovivoza(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=punkti_samovivoza_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML)
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "5")
+async def kurierskaya_po_vsei_rossii(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=kurierskaya_po_vsei_rossii_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML)
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "6")
+async def po_pochte(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=po_pochte_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(DeliveryMethods.method)
+
+
+@dp.callback_query(F.data == "payment methods")
+async def payment_methods(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    for i, method in enumerate(payment_methods_list):
+        kb.add(InlineKeyboardButton(text=method, callback_data=str(i)))
+    kb.adjust(1)
+    await callback.message.answer(text=payment_methods_text, reply_markup=kb.as_markup())
+    await state.set_state(PaymentMethods.payment_methods)
+
+
+@dp.callback_query(PaymentMethods.method, F.data == "back")
+async def back_to_payment_methods(callback: CallbackQuery, state: FSMContext):
+    await payment_methods(callback, state)
+
+
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "0")
+async def cash_payment(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=cash_payment_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(PaymentMethods.method)
+
+
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "1")
+async def cashless_payment(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=cashless_payment_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(PaymentMethods.method)
+
+
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "2")
+async def transfer_to_bank_card(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=transfer_to_bank_card_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(PaymentMethods.method)
+
+
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "3")
+async def transfer_to_e_wallet_card(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=transfer_to_e_wallet_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(PaymentMethods.method)
+
+
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "4")
+async def money_transfer_systems(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=money_transfer_systems_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(PaymentMethods.method)
+
+
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "5")
+async def payment_terminal(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    await callback.message.answer(text=payment_terminal_text, reply_markup=kb.as_markup(), parse_mode=ParseMode.HTML, )
+    await state.set_state(PaymentMethods.method)
+
+
+# @dp.callback_query(DeliveryMethods.delivery_methods, F.data == "0")
+# async def po_pochte(callback: CallbackQuery, state: FSMContext):
 
 
 async def main() -> None:

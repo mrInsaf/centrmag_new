@@ -46,6 +46,16 @@ class HowToGet(StatesGroup):
     how_to_get = State()
 
 
+class DeliveryMethods(StatesGroup):
+    delivery_methods = State()
+    method = State()
+
+
+class PaymentMethods(StatesGroup):
+    payment_methods = State()
+    method = State()
+
+
 class Misc(StatesGroup):
     misc = State()
 
