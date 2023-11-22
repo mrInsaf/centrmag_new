@@ -16,7 +16,7 @@ from states import *
 from db import *
 from texts import *
 
-TOKEN = '6748840687:AAEah69Bw4LUvpc43bcGA_Hr19_u98TZiJo'
+TOKEN = '6565334685:AAFMrkMnbIAB_x8DjHx9494idO8N0qCcoAs'
 
 dp = Dispatcher()
 
