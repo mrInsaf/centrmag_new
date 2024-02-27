@@ -59,4 +59,6 @@ class PaymentMethods(StatesGroup):
 class Misc(StatesGroup):
     misc = State()
 
+class AskQuestion(StatesGroup):
+    start = State()
 

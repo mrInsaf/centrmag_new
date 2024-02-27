@@ -25,44 +25,28 @@ dp = Dispatcher()
 
 
 @dp.callback_query(Login.input_login, F.data == "back")
-@dp.callback_query(Misc.misc, F.data == "back")
 @dp.callback_query(MakeOrder.choose_product, F.data == "back")
 @dp.callback_query(TrackOrder.choose_order, F.data == "back")
-@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "back")
-@dp.callback_query(PaymentMethods.payment_methods, F.data == "back")
+@dp.callback_query(AskQuestion.start, F.data == "back")
 @dp.callback_query(CreateAccount.get_name_and_surname,
                    F.data == "back")
 async def start_command(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(StartState.start_state)
     kb = InlineKeyboardBuilder()
     kb.adjust(1)
-    login_button = InlineKeyboardButton(text="Войти", callback_data="login")
-    create_account_button = InlineKeyboardButton(text="Создать аккаунт", callback_data="create account")
 
     create_order_button = InlineKeyboardButton(text="Создать заказ", callback_data="create order")
     track_order_button = InlineKeyboardButton(text="Отследить заказ", callback_data="track order")
-    logout_button = InlineKeyboardButton(text="Выйти из аккаунта", callback_data="logout")
     get_contacts = InlineKeyboardButton(text="Контакты", callback_data="get contacts")
     check_status = InlineKeyboardButton(text="Узнать статус заказа", callback_data="check status")
     check_availability = InlineKeyboardButton(text="Узнать наличие", callback_data="check availability")
-    how_to_search = InlineKeyboardButton(text="Как найти товар", callback_data="how to search")
-    grafik_raboty = InlineKeyboardButton(text="График работы", callback_data="grafik raboty")
-    how_to_get = InlineKeyboardButton(text="Как добраться", callback_data="how to get")
-    delivery_methods = InlineKeyboardButton(text="Способы доставки", callback_data="delivery methods")
-    payment_methods = InlineKeyboardButton(text="Способы оплаты", callback_data="payment methods")
+    ask_question = InlineKeyboardButton(text="Задать вопрос", callback_data="ask question")
 
-    if check_chat_id_in_db(callback.from_user.id):
-        if check_authorisation(callback.from_user.id):
-            authorised_buttons = [create_order_button, track_order_button, check_status, check_availability,
-                                  how_to_search, how_to_get, grafik_raboty, delivery_methods, payment_methods, logout_button, get_contacts]
-            for button in authorised_buttons:
-                kb.add(button)
-        else:
-            kb.add(login_button)
-    else:
-        buttons = [login_button, create_account_button]
-        for button in buttons:
-            kb.add(button)
+    authorised_buttons = [create_order_button, track_order_button, check_status, check_availability,
+                          ask_question, get_contacts]
+    for button in authorised_buttons:
+        kb.add(button)
+
     kb.adjust(1)
     await callback.message.answer(text='Привет, я бот магазина centrmag, выберите желаемое '
                                        'действие', reply_markup=kb.as_markup())
@@ -73,36 +57,22 @@ async def start_command(message: types.Message, state: FSMContext):
     await state.set_state(StartState.start_state)
     kb = InlineKeyboardBuilder()
     kb.adjust(1)
-    login_button = InlineKeyboardButton(text="Войти", callback_data="login")
-    create_account_button = InlineKeyboardButton(text="Создать аккаунт", callback_data="create account")
 
     create_order_button = InlineKeyboardButton(text="Создать заказ", callback_data="create order")
     track_order_button = InlineKeyboardButton(text="Отследить заказ", callback_data="track order")
-    logout_button = InlineKeyboardButton(text="Выйти из аккаунта", callback_data="logout")
     get_contacts = InlineKeyboardButton(text="Контакты", callback_data="get contacts")
     check_status = InlineKeyboardButton(text="Узнать статус заказа", callback_data="check status")
     check_availability = InlineKeyboardButton(text="Узнать наличие", callback_data="check availability")
-    how_to_search = InlineKeyboardButton(text="Как найти товар", callback_data="how to search")
-    grafik_raboty = InlineKeyboardButton(text="График работы", callback_data="grafik raboty")
-    how_to_get = InlineKeyboardButton(text="Как добраться", callback_data="how to get")
-    delivery_methods = InlineKeyboardButton(text="Способы доставки", callback_data="delivery methods")
-    payment_methods = InlineKeyboardButton(text="Способы оплаты", callback_data="payment methods")
+    ask_question = InlineKeyboardButton(text="Задать вопрос", callback_data="ask question")
 
-    if check_chat_id_in_db(message.from_user.id):
-        if check_authorisation(message.from_user.id):
-            authorised_buttons = [create_order_button, track_order_button, check_status, check_availability,
-                                  how_to_search, how_to_get, grafik_raboty, delivery_methods, payment_methods, logout_button, get_contacts]
-            for button in authorised_buttons:
-                kb.add(button)
-        else:
-            kb.add(login_button)
-    else:
-        buttons = [login_button, create_account_button]
-        for button in buttons:
-            kb.add(button)
+    authorised_buttons = [create_order_button, track_order_button, check_status, check_availability,
+                          ask_question, get_contacts]
+    for button in authorised_buttons:
+        kb.add(button)
+
     kb.adjust(1)
     await message.answer(text='Привет, я бот магазина centrmag, выберите желаемое '
-                              'действие', reply_markup=kb.as_markup())
+                                       'действие', reply_markup=kb.as_markup())
 
 
 def create_kb():
@@ -706,8 +676,39 @@ async def payment_terminal(callback: CallbackQuery, state: FSMContext):
     await state.set_state(PaymentMethods.method)
 
 
-# @dp.callback_query(DeliveryMethods.delivery_methods, F.data == "0")
-# async def po_pochte(callback: CallbackQuery, state: FSMContext):
+@dp.callback_query(F.data == "ask question")
+@dp.callback_query(Misc.misc, F.data == "back")
+@dp.callback_query(DeliveryMethods.delivery_methods, F.data == "back")
+@dp.callback_query(PaymentMethods.payment_methods, F.data == "back")
+async def ask_question_start(callback: CallbackQuery, state: FSMContext):
+    kb = create_kb()
+    kb.add(
+        InlineKeyboardButton(text="Как отследить заказ", callback_data="how to order"),
+        InlineKeyboardButton(text="Как найти товар", callback_data="how to search"),
+        InlineKeyboardButton(text="Как выбрать нужный журнал", callback_data="how to choose magazine"),
+        InlineKeyboardButton(text="Какая стоимость журнала", callback_data="price of magazine"),
+        InlineKeyboardButton(text="Способы оплаты", callback_data="payment methods"),
+        InlineKeyboardButton(text="График работы / Адрес", callback_data="grafik raboty"),
+        InlineKeyboardButton(text="Как добраться", callback_data="how to get"),
+        InlineKeyboardButton(text="Способы доставки", callback_data="delivery methods"),
+        InlineKeyboardButton(text="Задать другой вопрос", callback_data="ask another question"),
+    )
+    kb.adjust(1)
+    await callback.message.answer(text="Выберите интересующую тему", reply_markup=kb.as_markup())
+    await state.set_state(AskQuestion.start)
+
+
+@dp.callback_query(F.data == "how to order")
+async def how_to_order_start(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(text="В разработке")
+    # TODO
+
+
+@dp.callback_query(F.data == "how to choose magazine")
+async def how_to_choose_magazine(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(text="В разработке")
+    # TODO
+
 
 
 async def main() -> None:
